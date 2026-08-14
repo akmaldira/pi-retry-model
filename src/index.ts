@@ -87,6 +87,41 @@ export function evaluateEmptyResponse(message: any): EmptyResponseResult {
 export default function (pi: ExtensionAPI) {
   let retryCount = 0;
 
+  pi.registerCommand("retry-model-config", {
+    description: "Configure max retries for pi-retry-model (0 = disabled)",
+    handler: async (args, ctx) => {
+      const currentConfig = loadConfig();
+      const input = args.trim();
+
+      if (!input) {
+        ctx.ui.notify(
+          `${NOTIFY_PREFIX} Current max retries: ${currentConfig.maxRetries}${
+            currentConfig.maxRetries === 0 ? " (disabled)" : ""
+          }. Usage: /retry-model-config <number>`,
+          "info"
+        );
+        return;
+      }
+
+      const parsed = Number(input);
+      if (!Number.isInteger(parsed) || parsed < 0) {
+        ctx.ui.notify(
+          `${NOTIFY_PREFIX} Invalid input "${input}". Please provide a valid non-negative integer (0 or greater).`,
+          "error"
+        );
+        return;
+      }
+
+      saveConfig({ maxRetries: parsed });
+      ctx.ui.notify(
+        `${NOTIFY_PREFIX} Max retries updated to ${parsed}${
+          parsed === 0 ? " (disabled)" : ""
+        }.`,
+        "info"
+      );
+    },
+  });
+
   pi.on("session_start", () => {
     retryCount = 0;
   });

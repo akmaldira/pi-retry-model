@@ -1,6 +1,6 @@
 {
   "name": "pi-retry-model",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Pi Agent extension to auto-retry model execution when an empty response or thinking-only response occurs",
   "main": "src/index.ts",
   "type": "module",

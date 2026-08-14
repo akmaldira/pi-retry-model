@@ -8,7 +8,11 @@ An extension for [Pi Coding Agent](https://github.com/earendil-works/pi) that au
 - **Thinking-Only Response Recovery**: Triggers auto-retry when a model emits reasoning/thinking blocks but stops before producing output text.
 - **Tool Result Only Recovery**: Handles edge cases where execution halts right after tool execution without an assistant follow-up.
 - **Aborted Run Awareness**: Automatically skips retries when a run is manually cancelled (e.g., via `ESC` key).
-- **Max Retry Threshold**: Caps retries at 3 attempts per occurrence to avoid infinite retry loops.
+- **Max Retry Threshold**: Caps retries per occurrence to avoid infinite retry loops (default: 3). Configurable via command.
+
+## Commands
+
+- **`/retry-model-config [number]`**: View or update the maximum retry count. Accepts any valid non-negative integer (e.g., `/retry-model-config 5`). Set to `0` to disable auto-retries.
 
 ## Installation
 
