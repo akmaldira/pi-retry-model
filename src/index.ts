@@ -59,9 +59,15 @@ export function evaluateEmptyResponse(message: any): EmptyResponseResult {
     const hasText = content.some(
       (c: any) => c.type === "text" && (c.text ?? "").trim().length > 0
     );
-    const hasToolCall = content.some(
-      (c: any) => c.type === "toolCall" || c.type === "tool_use"
-    );
+    const hasToolCall =
+      (Array.isArray(message.toolCalls) && message.toolCalls.length > 0) ||
+      content.some(
+        (c: any) =>
+          c.type === "toolCall" ||
+          c.type === "tool_use" ||
+          c.type === "tool_call" ||
+          c.type === "functionCall"
+      );
     const hasThinking = content.some(
       (c: any) => c.type === "thinking" && (c.thinking ?? "").trim().length > 0
     );
@@ -85,7 +91,7 @@ export function evaluateEmptyResponse(message: any): EmptyResponseResult {
 }
 
 export default function (pi: ExtensionAPI) {
-  let retryCount = 0;
+  const retryCounts = new Map<string, number>();
 
   pi.registerCommand("retry-model-config", {
     description: "Configure max retries for pi-retry-model (0 = disabled)",
@@ -122,11 +128,16 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
-  pi.on("session_start", () => {
-    retryCount = 0;
+  pi.on("session_start", (_event, ctx) => {
+    if (ctx?.sessionManager?.getSessionId) {
+      retryCounts.delete(ctx.sessionManager.getSessionId());
+    } else {
+      retryCounts.clear();
+    }
   });
 
   pi.on("agent_settled", async (_event, ctx) => {
+    const sessionId = ctx.sessionManager?.getSessionId?.() ?? "default";
     const config = loadConfig();
     const maxRetries = config.maxRetries;
 
@@ -134,37 +145,40 @@ export default function (pi: ExtensionAPI) {
 
     const entries = ctx.sessionManager.getBranch();
     const messages = entries
-      .filter((entry) => entry.type === "message")
-      .map((entry) => entry.message);
+      .filter((entry: any) => entry.type === "message")
+      .map((entry: any) => entry.message);
 
     if (messages.length === 0) return;
 
     const lastMessage = messages[messages.length - 1];
 
     if (lastMessage.role === "assistant" && lastMessage.stopReason === "aborted") {
-      retryCount = 0;
+      retryCounts.delete(sessionId);
       return;
     }
 
     const { isEmpty, reason } = evaluateEmptyResponse(lastMessage);
 
     if (!isEmpty) {
-      retryCount = 0;
+      retryCounts.delete(sessionId);
       return;
     }
 
-    if (retryCount >= maxRetries) {
+    const currentRetry = retryCounts.get(sessionId) ?? 0;
+
+    if (currentRetry >= maxRetries) {
       ctx.ui.notify(
         `${NOTIFY_PREFIX} Failed to get response after ${maxRetries} attempt(s).`,
         "error"
       );
-      retryCount = 0;
+      retryCounts.delete(sessionId);
       return;
     }
 
-    retryCount++;
+    const nextRetry = currentRetry + 1;
+    retryCounts.set(sessionId, nextRetry);
     ctx.ui.notify(
-      `${NOTIFY_PREFIX} ${reason}. Retrying agent run (${retryCount}/${maxRetries})...`,
+      `${NOTIFY_PREFIX} ${reason}. Retrying agent run (${nextRetry}/${maxRetries})...`,
       "warning"
     );
 

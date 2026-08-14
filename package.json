@@ -30,7 +30,8 @@
     "package.json"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "pi": {
     "extensions": [
