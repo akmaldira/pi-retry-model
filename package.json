@@ -24,6 +24,11 @@
     "url": "https://github.com/akmaldira/pi-retry-model/issues"
   },
   "homepage": "https://github.com/akmaldira/pi-retry-model#readme",
+  "files": [
+    "src",
+    "README.md",
+    "package.json"
+  ],
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
