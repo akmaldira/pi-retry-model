@@ -1,0 +1,41 @@
+{
+  "name": "pi-retry-model",
+  "version": "1.0.0",
+  "description": "Pi Agent extension to auto-retry model execution when an empty response or thinking-only response occurs",
+  "main": "src/index.ts",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-coding-agent",
+    "extension",
+    "auto-retry",
+    "retry",
+    "gemini",
+    "model"
+  ],
+  "author": "akmaldira",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akmaldira/pi-retry-model.git"
+  },
+  "bugs": {
+    "url": "https://github.com/akmaldira/pi-retry-model/issues"
+  },
+  "homepage": "https://github.com/akmaldira/pi-retry-model#readme",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
